@@ -246,7 +246,7 @@ button.active-kb {
     height: 56px;
     border-radius: 50%;
     background: var(--equal-bg);
-    color: white;
+    color: var(--equal-text, #ffffff);
     border: 2px solid rgba(255, 255, 255, 0.3);
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
