@@ -63,10 +63,17 @@
         </div>
     </div>
 
+    <!-- History Overlay -->
+    <div class="history-overlay" id="historyOverlay" onclick="toggleHistory()"></div>
+
     <!-- History Panel -->
     <div class="history-panel" id="historyPanel">
         <div class="history-header">
-            <button onclick="clearHistory()">Clear</button>
+            <h3>History</h3>
+            <div class="btn-group">
+                <button class="clear-btn" onclick="clearHistory()">Clear All</button>
+                <button onclick="toggleHistory()">Close</button>
+            </div>
         </div>
         <div class="history-list" id="historyList"></div>
     </div>

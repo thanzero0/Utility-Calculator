@@ -117,6 +117,7 @@ function renderHistory() {
 function loadHistory(index) {
     currentExpression = history[index].res.toString();
     display.value = currentExpression;
+    toggleHistory();
 }
 
 function clearHistory() {
@@ -151,8 +152,11 @@ function updateFabFocus() {
 
 function toggleHistory() {
     const panel = document.getElementById("historyPanel");
+    const overlay = document.getElementById("historyOverlay");
     const btn = document.querySelector(".history-fab");
+    
     panel.classList.toggle("active");
+    overlay.classList.toggle("active");
     btn.classList.toggle("status-active", panel.classList.contains("active"));
 }
 
@@ -308,6 +312,32 @@ function adjustColor(hex, amt) {
 window.addEventListener("keydown", function (e) {
     const key = e.key;
 
+    if (key === "Escape") {
+        const historyPanel = document.getElementById("historyPanel");
+        const themeMenu = document.getElementById("themeMenu");
+        const customPanel = document.getElementById("customThemePanel");
+        
+        if (historyPanel.classList.contains("active")) {
+            toggleHistory();
+            return;
+        }
+        if (customPanel && customPanel.classList.contains("active")) {
+            customPanel.classList.remove("active");
+            return;
+        }
+        if (themeMenu.classList.contains("active")) {
+            themeMenu.classList.remove("active");
+            return;
+        }
+        if (fabGroup.classList.contains("active")) {
+            fabGroup.classList.remove("active");
+            document.querySelector(".main-fab").classList.remove("status-active");
+            focusedFabIndex = -1;
+            updateFabFocus();
+            return;
+        }
+    }
+
     // Theme Menu Navigation
     if (themeMenu.classList.contains("active")) {
         const options = document.querySelectorAll('.theme-opt');
@@ -328,10 +358,7 @@ window.addEventListener("keydown", function (e) {
             options[focusedThemeIndex].click();
             return;
         }
-        if (key === "Escape") {
-            themeMenu.classList.remove("active");
-            return;
-        }
+
     }
 
     // Global Shortcuts
@@ -361,13 +388,6 @@ window.addEventListener("keydown", function (e) {
         if (key === "Enter" && focusedFabIndex !== -1) {
             e.preventDefault();
             allBtns[focusedFabIndex].click();
-            return;
-        }
-        if (key === "Escape") {
-            fabGroup.classList.remove("active");
-            document.querySelector(".main-fab").classList.remove("status-active");
-            focusedFabIndex = -1;
-            updateFabFocus();
             return;
         }
     }
