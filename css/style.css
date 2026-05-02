@@ -13,6 +13,8 @@
     --equal-hover: #cccccc;
     --equal-text: #000000;
     --shadow: 0 20px 40px rgba(255, 255, 255, 0.05);
+    --calc-width: 320px;
+    --calc-scale: 1;
 }
 
 body.light-theme {
@@ -125,7 +127,8 @@ body {
 }
 
 .calculator {
-    width: 320px;
+    width: var(--calc-width);
+    transform: scale(var(--calc-scale));
     padding: 24px;
     border-radius: 28px;
     background-color: var(--calc-bg);
@@ -133,6 +136,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.05);
     position: relative;
     z-index: 1;
+    transform-origin: center;
 }
 
 #display {
@@ -305,10 +309,9 @@ button.active-kb {
     outline: none;
 }
 
-.theme-menu {
+.theme-menu, .size-menu {
     position: absolute;
     bottom: calc(100% + 28px);
-    /* Increased distance for better clearance */
     left: 50%;
     transform: translateX(-50%) translateY(15px);
     background: var(--calc-bg);
@@ -326,13 +329,13 @@ button.active-kb {
     z-index: 1000;
 }
 
-.theme-menu.active {
+.theme-menu.active, .size-menu.active {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(0);
 }
 
-.theme-opt {
+.theme-opt, .size-opt {
     width: 100%;
     padding: 10px 14px;
     border-radius: 8px;
@@ -346,16 +349,16 @@ button.active-kb {
     font-weight: 500;
 }
 
-.theme-opt:hover {
+.theme-opt:hover, .size-opt:hover {
     background: var(--btn-hover);
 }
 
-.theme-opt.active {
+.theme-opt.active, .size-opt.active {
     background: var(--equal-bg);
     color: white;
 }
 
-.theme-opt.focus {
+.theme-opt.focus, .size-opt.focus {
     background: var(--btn-hover);
     outline: none;
 }
@@ -504,13 +507,10 @@ button.active-kb {
     color: var(--equal-bg);
 }
 
-/* Custom Theme Editor Styles */
-.custom-theme-panel {
+/* Custom Panel Base Styles */
+.custom-theme-panel, .custom-size-panel {
     position: absolute;
     bottom: calc(100% + 28px);
-    /* Same level as theme-menu */
-    left: calc(50% + 85px);
-    /* Positioned to the right of the 150px wide theme-menu */
     background: var(--calc-bg);
     border-radius: 24px;
     padding: 24px;
@@ -523,6 +523,18 @@ button.active-kb {
     z-index: 1002;
     animation: fadeInCustom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(15px);
+}
+
+.custom-theme-panel {
+    left: calc(50% + 85px);
+}
+
+.custom-size-panel {
+    left: calc(50% - 325px); /* Positioned to the left of size menu */
+}
+
+.custom-theme-panel.active, .custom-size-panel.active {
+    display: flex;
 }
 
 @keyframes fadeInCustom {

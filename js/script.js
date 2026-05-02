@@ -58,9 +58,19 @@ function handleInput(value, id) {
     }
 
     // Standard buttons and keyboard
-    const operators = ["+", "-", "*", "/", "(", ")", "**", "."];
-    if (!isNaN(value) || operators.includes(value)) {
+    const operators = ["+", "-", "*", "/", "**", "."];
+    if (!isNaN(value) || value === "(" || value === ")") {
         currentExpression += value;
+        display.value = currentExpression;
+    } else if (operators.includes(value)) {
+        const lastChar = currentExpression.toString().slice(-1);
+        if (operators.includes(lastChar) && currentExpression.length > 0) {
+            // Replace last operator with the new one
+            currentExpression = currentExpression.toString().slice(0, -1) + value;
+        } else if (currentExpression.length > 0 || value === "-") {
+            // Allow minus at the beginning for negative numbers, otherwise prevent starting with operator
+            currentExpression += value;
+        }
         display.value = currentExpression;
     }
 }
@@ -168,7 +178,83 @@ function toggleScientific() {
 }
 
 const themeMenu = document.getElementById("themeMenu");
+const sizeMenu = document.getElementById("sizeMenu");
 let focusedThemeIndex = -1;
+let focusedSizeIndex = -1;
+
+function toggleSizeMenu() {
+    const customPanel = document.getElementById("customSizePanel");
+    sizeMenu.classList.toggle("active");
+    if (customPanel) customPanel.classList.remove("active");
+
+    if (sizeMenu.classList.contains("active")) {
+        const options = document.querySelectorAll('.size-opt');
+        focusedSizeIndex = Array.from(options).findIndex(opt => opt.classList.contains('active'));
+        updateSizeMenuFocus();
+    }
+}
+
+function updateSizeMenuFocus() {
+    const options = document.querySelectorAll('.size-opt');
+    options.forEach((opt, index) => {
+        opt.classList.toggle('focus', index === focusedSizeIndex);
+    });
+}
+
+function setSize(size, isInitial = false) {
+    const root = document.documentElement;
+    const presets = {
+        'mini': { width: '260px', scale: '0.85' },
+        'medium': { width: '320px', scale: '1' },
+        'large': { width: '400px', scale: '1.15' },
+        'desktop': { width: '550px', scale: '1.25' }
+    };
+
+    if (size === 'custom') {
+        loadCustomSize();
+    } else if (presets[size]) {
+        root.style.setProperty('--calc-width', presets[size].width);
+        root.style.setProperty('--calc-scale', presets[size].scale);
+        if (document.getElementById('customSizePanel')) 
+            document.getElementById('customSizePanel').classList.remove('active');
+    }
+
+    document.querySelectorAll('.size-opt').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.innerText.toLowerCase() === size) btn.classList.add('active');
+        if (size === 'custom' && btn.id === 'customSizeOpt') btn.classList.add('active');
+    });
+
+    if (!isInitial) sizeMenu.classList.remove("active");
+    localStorage.setItem('calculator-size', size);
+}
+
+function toggleCustomSize() {
+    const panel = document.getElementById("customSizePanel");
+    panel.classList.toggle("active");
+}
+
+function applyCustomSize() {
+    const width = document.getElementById('size-width').value;
+    const scale = document.getElementById('size-scale').value;
+    const root = document.documentElement;
+    root.style.setProperty('--calc-width', width + 'px');
+    root.style.setProperty('--calc-scale', scale);
+    localStorage.setItem('calculator-custom-size', JSON.stringify({ width, scale }));
+}
+
+function loadCustomSize() {
+    const saved = localStorage.getItem('calculator-custom-size');
+    if (saved) {
+        const { width, scale } = JSON.parse(saved);
+        const root = document.documentElement;
+        root.style.setProperty('--calc-width', width + 'px');
+        root.style.setProperty('--calc-scale', scale);
+        document.getElementById('size-width').value = width;
+        document.getElementById('size-scale').value = scale;
+    }
+}
+
 
 function toggleThemeMenu() {
     const customPanel = document.getElementById("customThemePanel");
@@ -315,7 +401,9 @@ window.addEventListener("keydown", function (e) {
     if (key === "Escape") {
         const historyPanel = document.getElementById("historyPanel");
         const themeMenu = document.getElementById("themeMenu");
+        const sizeMenu = document.getElementById("sizeMenu");
         const customPanel = document.getElementById("customThemePanel");
+        const customSizePanel = document.getElementById("customSizePanel");
         
         if (historyPanel.classList.contains("active")) {
             toggleHistory();
@@ -325,8 +413,16 @@ window.addEventListener("keydown", function (e) {
             customPanel.classList.remove("active");
             return;
         }
+        if (customSizePanel && customSizePanel.classList.contains("active")) {
+            customSizePanel.classList.remove("active");
+            return;
+        }
         if (themeMenu.classList.contains("active")) {
             themeMenu.classList.remove("active");
+            return;
+        }
+        if (sizeMenu.classList.contains("active")) {
+            sizeMenu.classList.remove("active");
             return;
         }
         if (fabGroup.classList.contains("active")) {
@@ -422,13 +518,20 @@ document.addEventListener("click", (e) => {
         const customPanel = document.getElementById("customThemePanel");
         if (customPanel) customPanel.classList.remove("active");
     }
+    if (!e.target.closest(".size-fab-container")) {
+        if (sizeMenu) sizeMenu.classList.remove("active");
+        const customSizePanel = document.getElementById("customSizePanel");
+        if (customSizePanel) customSizePanel.classList.remove("active");
+    }
     if (!e.target.closest("#fabGroup")) {
         document.getElementById("fabGroup").classList.remove("active");
         document.querySelector(".main-fab").classList.remove("status-active");
     }
 });
 
-// Load saved theme and history
+// Load saved theme, size and history
 const savedTheme = localStorage.getItem('calculator-theme') || 'dark';
+const savedSize = localStorage.getItem('calculator-size') || 'medium';
 setTheme(savedTheme, true);
+setSize(savedSize, true);
 renderHistory();
