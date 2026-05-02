@@ -3,6 +3,9 @@ const buttons = document.querySelector(".buttons");
 
 let currentExpression = "";
 let history = JSON.parse(localStorage.getItem('calculator-history')) || [];
+let lastResult = 0;
+let isDeg = true;
+let isInv = false;
 
 function handleInput(value, id) {
     // Visual feedback for keyboard
@@ -40,15 +43,10 @@ function handleInput(value, id) {
 
     // Handle Scientific Functions
     const scientificMapping = {
-        'sin': 'Math.sin(',
-        'cos': 'Math.cos(',
-        'tan': 'Math.tan(',
-        'log': 'Math.log10(',
-        'ln': 'Math.log(',
-        'sqrt': 'Math.sqrt(',
-        'pow': '**',
-        'pi': 'Math.PI',
-        'e': 'Math.E'
+        'sin': 'sin(', 'cos': 'cos(', 'tan': 'tan(',
+        'asin': 'asin(', 'acos': 'acos(', 'atan': 'atan(',
+        'log': 'log(', 'ln': 'ln(', 'sqrt': 'sqrt(',
+        'pow': '^', 'pi': 'π', 'e': 'e'
     };
 
     if (scientificMapping[value]) {
@@ -58,9 +56,18 @@ function handleInput(value, id) {
     }
 
     // Standard buttons and keyboard
-    const operators = ["+", "-", "*", "/", "**", "."];
+    const operators = ["+", "-", "*", "/", "**", ".", "%"];
     if (!isNaN(value) || value === "(" || value === ")") {
         currentExpression += value;
+        display.value = currentExpression;
+    } else if (value === "ans") {
+        currentExpression += lastResult;
+        display.value = currentExpression;
+    } else if (value === "exp") {
+        currentExpression += "*10^(";
+        display.value = currentExpression;
+    } else if (value === "!") {
+        currentExpression += "!";
         display.value = currentExpression;
     } else if (operators.includes(value)) {
         const lastChar = currentExpression.toString().slice(-1);
@@ -77,10 +84,30 @@ function handleInput(value, id) {
 
 function calculateResult() {
     try {
-        const expressionToEval = currentExpression
+        let expressionToEval = currentExpression
             .replace(/×/g, '*')
             .replace(/÷/g, '/')
-            .replace(/\^/g, '**');
+            .replace(/\^/g, '**')
+            .replace(/π/g, 'Math.PI')
+            .replace(/e/g, 'Math.E')
+            .replace(/log\(/g, 'Math.log10(')
+            .replace(/ln\(/g, 'Math.log(')
+            .replace(/sqrt\(/g, 'Math.sqrt(');
+
+        // Handle Factorial
+        expressionToEval = expressionToEval.replace(/(\d+)!/g, (match, n) => factorial(parseInt(n)));
+
+        // Handle Trig Functions with Deg/Rad
+        const trigRegex = /(asin|acos|atan|sin|cos|tan)\(/g;
+        expressionToEval = expressionToEval.replace(trigRegex, (match, func) => {
+            if (isDeg && !func.startsWith('a')) {
+                return `Math.${func}((Math.PI/180)*`;
+            }
+            if (isDeg && func.startsWith('a')) {
+                return `(180/Math.PI)*Math.${func}(`;
+            }
+            return `Math.${func}(`;
+        });
 
         const result = eval(expressionToEval);
 
@@ -94,6 +121,8 @@ function calculateResult() {
             };
             addToHistory(historyItem);
 
+            lastResult = result;
+            document.getElementById("ans-display").innerText = `Ans = ${result}`;
             currentExpression = result.toString();
             display.value = currentExpression;
         }
@@ -103,6 +132,38 @@ function calculateResult() {
             display.value = currentExpression;
         }, 1500);
     }
+}
+
+function factorial(n) {
+    if (n < 0) return NaN;
+    if (n === 0) return 1;
+    let res = 1;
+    for (let i = 2; i <= n; i++) res *= i;
+    return res;
+}
+
+function toggleDegRad() {
+    isDeg = !isDeg;
+    const btn = document.querySelector(".deg-rad");
+    btn.innerText = isDeg ? "Deg" : "Rad";
+}
+
+function toggleInv() {
+    isInv = !isInv;
+    const btn = document.querySelector(".inv-btn");
+    btn.classList.toggle("status-active", isInv);
+    
+    const trigs = document.querySelectorAll(".trig");
+    trigs.forEach(t => {
+        const base = t.dataset.value;
+        if (isInv) {
+            t.innerText = base === "sin" ? "asin" : (base === "cos" ? "acos" : "atan");
+            t.dataset.value = t.innerText;
+        } else {
+            t.innerText = base.replace('a', '');
+            t.dataset.value = t.innerText;
+        }
+    });
 }
 
 function addToHistory(item) {
@@ -204,10 +265,10 @@ function updateSizeMenuFocus() {
 function setSize(size, isInitial = false) {
     const root = document.documentElement;
     const presets = {
-        'mini': { width: '260px', scale: '0.85' },
-        'medium': { width: '320px', scale: '1' },
-        'large': { width: '400px', scale: '1.15' },
-        'desktop': { width: '550px', scale: '1.25' }
+        'mini': { width: '280px', scale: '0.9' },
+        'medium': { width: '340px', scale: '1' },
+        'large': { width: '400px', scale: '1.05' },
+        'desktop': { width: '480px', scale: '1.1' }
     };
 
     if (size === 'custom') {
@@ -454,7 +515,32 @@ window.addEventListener("keydown", function (e) {
             options[focusedThemeIndex].click();
             return;
         }
+        if (key === "Escape") {
+            themeMenu.classList.remove("active");
+            return;
+        }
+    }
 
+    // Size Menu Navigation
+    if (sizeMenu.classList.contains("active")) {
+        const options = document.querySelectorAll('.size-opt');
+        if (key === "ArrowDown") {
+            e.preventDefault();
+            focusedSizeIndex = (focusedSizeIndex + 1) % options.length;
+            updateSizeMenuFocus();
+            return;
+        }
+        if (key === "ArrowUp") {
+            e.preventDefault();
+            focusedSizeIndex = (focusedSizeIndex - 1 + options.length) % options.length;
+            updateSizeMenuFocus();
+            return;
+        }
+        if (key === "Enter" && focusedSizeIndex !== -1) {
+            e.preventDefault();
+            options[focusedSizeIndex].click();
+            return;
+        }
     }
 
     // Global Shortcuts
