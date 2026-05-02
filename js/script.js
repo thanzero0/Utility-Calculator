@@ -621,3 +621,12 @@ const savedSize = localStorage.getItem('calculator-size') || 'medium';
 setTheme(savedTheme, true);
 setSize(savedSize, true);
 renderHistory();
+// Cursor Glow
+const cursorGlow = document.getElementById('cursor-glow');
+window.addEventListener('mousemove', (e) => {
+    cursorGlow.style.left = `${e.clientX}px`;
+    cursorGlow.style.top = `${e.clientY}px`;
+    if (cursorGlow.style.opacity === '0' || !cursorGlow.style.opacity) cursorGlow.style.opacity = '1';
+});
+document.addEventListener('mouseleave', () => cursorGlow.style.opacity = '0');
+document.addEventListener('mouseenter', () => cursorGlow.style.opacity = '1');

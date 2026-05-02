@@ -15,6 +15,7 @@
     --shadow: 0 20px 40px rgba(255, 255, 255, 0.05);
     --calc-width: 320px;
     --calc-scale: 1;
+    --cursor-color: #ffffff;
 }
 
 body.light-theme {
@@ -31,6 +32,7 @@ body.light-theme {
     --equal-bg: #f97316;
     --equal-hover: #ea580c;
     --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --cursor-color: #f97316;
 }
 
 body.neon-theme {
@@ -47,6 +49,7 @@ body.neon-theme {
     --equal-hover: #10b981;
     --shadow: 0 0 20px rgba(16, 185, 129, 0.3);
     backdrop-filter: blur(10px);
+    --cursor-color: #10b981;
 }
 
 body.sunset-theme {
@@ -62,6 +65,7 @@ body.sunset-theme {
     --equal-bg: #ea580c;
     --equal-hover: #f97316;
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    --cursor-color: #ea580c;
 }
 
 body.cyberpunk-theme {
@@ -77,6 +81,7 @@ body.cyberpunk-theme {
     --equal-bg: #ff00ff;
     --equal-hover: #ff66ff;
     --shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+    --cursor-color: #ff00ff;
 }
 
 body.forest-theme {
@@ -92,6 +97,7 @@ body.forest-theme {
     --equal-bg: #10b981;
     --equal-hover: #34d399;
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    --cursor-color: #10b981;
 }
 
 body.ocean-theme {
@@ -107,6 +113,7 @@ body.ocean-theme {
     --equal-bg: #0284c7;
     --equal-hover: #0ea5e9;
     --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    --cursor-color: #0284c7;
 }
 
 * {
@@ -239,31 +246,29 @@ button {
 .fab-group {
     position: relative;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
 }
 
 .fab-options {
     position: absolute;
-    left: 80px;
+    bottom: 0;
     display: flex;
-    flex-direction: row;
-    gap: 16px;
+    gap: 15px;
     opacity: 0;
     visibility: hidden;
-    transform: translateX(-15px);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: var(--calc-bg);
-    padding: 8px 16px;
+    transform: translateY(20px);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: rgba(0, 0, 0, 0.1);
+    padding: 10px 20px;
     border-radius: 40px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
 }
 
 .fab-group.active .fab-options {
     opacity: 1;
     visibility: visible;
-    transform: translateX(0);
+    transform: translateY(-80px);
 }
 
 .theme-fab-container {
@@ -337,8 +342,8 @@ button {
 .theme-menu, .size-menu {
     position: absolute;
     bottom: calc(100% + 28px);
-    left: 50%;
-    transform: translateX(-50%) translateY(15px);
+    left: 0;
+    transform: translateY(15px);
     background: var(--calc-bg);
     border-radius: 16px;
     padding: 10px;
@@ -357,7 +362,7 @@ button {
 .theme-menu.active, .size-menu.active {
     opacity: 1;
     visibility: visible;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
 }
 
 .theme-opt, .size-opt {
@@ -536,6 +541,7 @@ button {
 .custom-theme-panel, .custom-size-panel {
     position: absolute;
     bottom: calc(100% + 28px);
+    left: 0;
     background: var(--calc-bg);
     border-radius: 24px;
     padding: 24px;
@@ -548,14 +554,6 @@ button {
     z-index: 1002;
     animation: fadeInCustom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(15px);
-}
-
-.custom-theme-panel {
-    left: calc(50% + 85px);
-}
-
-.custom-size-panel {
-    left: calc(50% + 85px); /* Positioned to the right, same as theme panel */
 }
 
 .custom-theme-panel.active, .custom-size-panel.active {
@@ -695,4 +693,19 @@ button {
     .scientific-grid {
         grid-template-columns: repeat(4, 1fr);
     }
+}
+
+/* Cursor Glow */
+.cursor-glow {
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--cursor-color) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  filter: blur(80px);
 }
